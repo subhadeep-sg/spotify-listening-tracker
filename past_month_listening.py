@@ -1,5 +1,7 @@
 import os.path
 import time
+import os
+from dotenv import load_dotenv
 import spotipy
 from pytz import timezone
 from spotipy.oauth2 import SpotifyOAuth
@@ -14,14 +16,17 @@ to pick up on the most recently played tracks.
 
 A particular thing to note is to avoid overlap of entries. I want each entry to be unique (on the time not on track name).
 """
+
+load_dotenv()
+
 storage_path = './storageListening'
 scope = (
     "user-read-recently-played "
     # "user-top-read"
 )
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-    client_id="39efe78c60ec4915a4e6e0274e0fc240",
-    client_secret="6e9b34f37b3e4ee0b94ba48260de98a3",
+    client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+    client_secret=os.getenv('SPOTIFY_CLIENT_SECRET'),
     redirect_uri="http://localhost:5000",
     scope=scope
 ))
@@ -53,14 +58,14 @@ for i, item in enumerate(recent_tracks['items']):
     # print(f"{i}, Track: {track['name']} by {track['artists'][0]['name']}")
     # print(f"Played at: {item['played_at']}")
     # print("-" * 40)
-    listening_record = {'track': track['name'], 'artist': artists,#track['artists'][0]['name'],
+    listening_record = {'track': track['name'], 'artist': artists,  #track['artists'][0]['name'],
                         'date': date_played,
                         'est_time': est_time, 'ist_time': ist_time,
                         'iso_time': item['played_at']
                         }
 
     # Check first if this listening record has already been added or not
-    if (#listening_record['track'] not in df['track'].values and
+    if (  #listening_record['track'] not in df['track'].values and
             listening_record['iso_time'] not in df['iso_time'].values):
         df.loc[len(df)] = listening_record
     else:
@@ -70,3 +75,4 @@ for i, item in enumerate(recent_tracks['items']):
 df = df.sort_values(by='iso_time', ascending=True)
 df.to_csv(f'{storage_path}/listening_history_{current_year}.csv', index=False)
 
+# df.to_csv(f'sample_listening_history.csv', index=False)

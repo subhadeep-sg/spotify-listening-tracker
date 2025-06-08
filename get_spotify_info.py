@@ -1,5 +1,6 @@
 import base64
-
+import os
+from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import requests
@@ -8,9 +9,11 @@ scope = (
     "user-read-recently-played "
     # "user-top-read"
 )
+
+load_dotenv()
 sp_oauth = SpotifyOAuth(
-    client_id="39efe78c60ec4915a4e6e0274e0fc240",
-    client_secret="37ace1fa5cdb415a91be8fa9a672d2b5",
+    client_id=os.getenv('SPOTIPY_CLIENT_ID'),
+    client_secret=os.getenv('SPOTIPY_CLIENT_SECRET'),
     redirect_uri="http://localhost:5500",
     # redirect_uri='https://webhook.site/78f181cb-9a03-4083-bd97-498425695c50',
     scope=scope

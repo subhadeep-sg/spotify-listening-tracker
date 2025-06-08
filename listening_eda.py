@@ -3,10 +3,14 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import time
 import json
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 st = time.time()
-SPOTIFY_CLIENT_ID = '39efe78c60ec4915a4e6e0274e0fc240'
-SPOTIFY_CLIENT_SECRET = '6e9b34f37b3e4ee0b94ba48260de98a3'
+SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
+SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
 auth_manager = SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_CLIENT_SECRET)
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
