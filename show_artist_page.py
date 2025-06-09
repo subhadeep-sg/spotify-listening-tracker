@@ -4,10 +4,13 @@
 # import spotipy
 # from spotipy.oauth2 import SpotifyOAuth
 # import os
+# from dotenv import load_dotenv
+#
+# load_dotenv()
 #
 # sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-#     client_id="39efe78c60ec4915a4e6e0274e0fc240",
-#     client_secret="32bc09ab8f9f4e1996d3fb8b144c8f83",
+#     client_id=os.getenv('SPOTIPY_CLIENT_ID'),
+#     client_secret=os.getenv('SPOTIPY_CLIENT_SECRET'),
 #     redirect_uri="http://localhost:8888/callback",
 #     scope="user-top-read"
 # ))

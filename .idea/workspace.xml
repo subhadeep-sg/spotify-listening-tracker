@@ -5,22 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cd9f96d4-5432-45ca-834a-adc9441f733a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.cache" beforeDir="false" afterPath="$PROJECT_DIR$/.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/spotifyProject.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis_scripts/yearly_stats.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/get_spotify_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/get_spotify_info.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kaggle.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/listening_eda.py" beforeDir="false" afterPath="$PROJECT_DIR$/listening_eda.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/listening_history_with_metadata.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/listening_history_with_metadata_2025.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/past_month_listening.py" beforeDir="false" afterPath="$PROJECT_DIR$/past_month_listening.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/show_artist_page.py" beforeDir="false" afterPath="$PROJECT_DIR$/show_artist_page.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storageListening/listening_history_2024.csv" beforeDir="false" afterPath="$PROJECT_DIR$/storageListening/listening_history_2024.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storageListening/listening_history_2025.csv" beforeDir="false" afterPath="$PROJECT_DIR$/storageListening/listening_history_2025.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1529,7 +1514,8 @@
       <workItem from="1749422745348" duration="504000" />
       <workItem from="1749423273974" duration="843000" />
       <workItem from="1749424143954" duration="371000" />
-      <workItem from="1749424998468" duration="954000" />
+      <workItem from="1749424998468" duration="1556000" />
+      <workItem from="1749426581641" duration="1979000" />
     </task>
     <servers />
   </component>
@@ -1538,7 +1524,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/spotifyProject$get_spotify_info.coverage" NAME="get_spotify_info Coverage Results" MODIFIED="1732926962256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/spotifyProject$past_month_listening.coverage" NAME="past_month_listening Coverage Results" MODIFIED="1749424397804" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/spotifyProject$past_month_listening.coverage" NAME="past_month_listening Coverage Results" MODIFIED="1749426037298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/spotifyProject$listening_eda.coverage" NAME="listening_eda Coverage Results" MODIFIED="1748980558875" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/spotifyProject$show_artist_page.coverage" NAME="show_artist_page Coverage Results" MODIFIED="1732058844245" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/spotifyProject$yearly_stats.coverage" NAME="yearly_stats Coverage Results" MODIFIED="1748981196294" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/analysis_scripts" />
