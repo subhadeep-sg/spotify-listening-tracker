@@ -1,0 +1,23 @@
+.env
+.cache
+venv/
+.venv/
+.idea/
+
+PROGRESS.md
+
+## My private scripts and previous versions of code
+scripts/
+
+## My listening data
+data/
+storageListening/
+metadata/
+metadata_files/
+
+## With regards to my task schedulers
+auto_extract_log.txt
+
+
+
+
