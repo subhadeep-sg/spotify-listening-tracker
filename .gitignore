@@ -1,9 +1,12 @@
+## Environment and IDE related folders
 .env
 .cache
 venv/
 .venv/
 .idea/
+.vscode/
 
+## Private notes
 PROGRESS.md
 
 ## My private scripts and previous versions of code

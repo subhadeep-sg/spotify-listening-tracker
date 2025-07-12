@@ -20,20 +20,6 @@ current_year = datetime.now().year
 
 
 def read_recently_played():
-    """
-    Creates a Spotipy `Spotify` object using OAuth credentials loaded
-    from environment variables. The object is authorized with the
-    `user-read-recently-played` scope, allowing access to the current user's recent
-    listening history.
-    Environment Variables Required:
-        - SPOTIFY_CLIENT_ID
-        - SPOTIFY_CLIENT_SECRET
-    :return:spotipy.Spotify object
-    An authenticated Spotify Web API client instance.
-
-    Raises:
-        spotipy.oauth2.SpotifyOAuthError: If authentication fails due to missing/invalid credentials.
-    """
     logger.info('Generating spotipy.Spotify class object based on private user keys..')
     scope = (
         "user-read-recently-played "
@@ -50,18 +36,6 @@ def read_recently_played():
 
 
 def extract_time_based_recent_played(spotipy_object, timeframe=1, time_type='day'):
-    """
-    Extracts recently played tracks from the Spotify Web API within a given timeframe.
-    :param spotipy_object: spotipy.Spotify
-    An authenticated Spotipy client object.
-    :param timeframe: int, optional
-    The number of time units (days/hours) to look back for played tracks. Default is 1.
-    :param time_type: str, optional
-           The type of time window to use ('day' supported currently). Default is 'day'.
-    :return: dict
-           A dictionary containing recently played track data returned by the Spotify API.
-           If an error occurs, returns an empty dictionary.
-    """
     try:
         logger.info(f'Extracting recent played from Spotify Web API..')
         one_day_ago = datetime.now() - timedelta(days=timeframe)
@@ -83,11 +57,7 @@ def storage_pipeline(tracks):
     appends any new tracks from the provided API `tracks` response, and returns the
     updated DataFrame.
     Duplicate tracks based on unique `iso_time` are ignored.
-    The function handles:
-    - Schema validation of existing data
-    - Parsing of new Spotify play records
-    - Timezone conversion to EST and IST
-    - Appending and sorting the final dataset
+
     :param tracks: dict,
     A dictionary returned by the Spotify Web API `current_user_recently_played()` endpoint.
     :return: pd.DataFrame

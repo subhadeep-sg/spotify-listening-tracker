@@ -20,12 +20,27 @@ def spotify_authenticate():
     logger.info(f'Authenticating with Spotify Web API..')
     SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
     SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
-    auth_manager = SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_CLIENT_SECRET)
-    sp = spotipy.Spotify(auth_manager=auth_manager)
-    return sp
+
+    try:
+        auth_manager = SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID,
+                                                client_secret=SPOTIFY_CLIENT_SECRET)
+        sp = spotipy.Spotify(auth_manager=auth_manager)
+        return sp
+    except Exception as e:
+        logger.error(f'Spotify Authentication Error: {e}')
 
 
 def query_search_spotipy(query, artist):
+    """
+    Searches the Spotify Web API for a track and its main artist's genre information.
+
+    :param query: str
+    A search string combining track and artist name.
+    :param artist: str
+    Full artist name string directly from the dataset
+    :return: tuple[float, str]
+    A tuple containing track duration in seconds and genre string (both can be None if either unavailable).
+    """
     logger.debug('Doing a query search..')
     genre_data, track_length = None, None
 
@@ -54,7 +69,18 @@ def query_search_spotipy(query, artist):
     return track_length, genre_data
 
 
-def metadata(dataframe, meta_dataframe):
+def update_meta_dataframe(dataframe, meta_dataframe):
+    """
+    Updates a listening history DataFrame with genre and track duration metadata
+    from local metadata files and, if necessary, querying the Spotify Web API.
+
+    :param dataframe: pd.DataFrame
+    Full listening history DataFrame
+    :param meta_dataframe: pd.DataFrame
+    Previously existing metadata DataFrame that will be updated with new records.
+    :return: pd.DataFrame
+    Updated metadata DataFrame with genre and duration fields populated (if available).
+    """
     os.makedirs(f'{root_dir}/metadata', exist_ok=True)
 
     missing_query_path = f'{root_dir}/metadata/missing_queries.json'
@@ -116,17 +142,20 @@ def metadata(dataframe, meta_dataframe):
         logging.debug(f'Updated row:\n{dataframe.iloc[last_index]}')
         if not dataframe.at[last_index,'length_ms'] or not dataframe.at[last_index, 'genre']:
             if query not in missing_queries:
+                logger.debug(f'{query} has data missing and has not been added to missing queries')
                 missing_queries[query] = {
                     'track' : track_name,
                     'artist': artist_name,
                     'iso_time': dataframe.at[last_index, 'iso_time']
                 }
+        elif query in missing_queries:
+            del missing_queries[query]
+            logger.debug(f'Removing {query} from missing queries since data is now available..')
 
         new_rows_processed += 1
         last_index += 1
 
     with open(missing_query_path, 'w') as f:
-        # Adding indent for better human readability
         json.dump(missing_queries, f, indent=2)
 
     with open(f"{root_dir}/metadata/artist_metadata.json", "w") as f:
@@ -151,7 +180,7 @@ if __name__ == '__main__':
 
     df_with_metadata = pd.read_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv')
 
-    updated_df = metadata(dataframe=df, meta_dataframe=df_with_metadata)
+    updated_df = update_meta_dataframe(dataframe=df, meta_dataframe=df_with_metadata)
     updated_df.to_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv', index=False)
 
     logger.info(f'Runtime: {time.time() - st}')
