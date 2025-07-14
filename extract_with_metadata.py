@@ -69,7 +69,7 @@ def query_search_spotipy(query, artist):
     return track_length, genre_data
 
 
-def update_meta_dataframe(dataframe, meta_dataframe):
+def update_meta_dataframe(dataframe, meta_dataframe, from_start=False):
     """
     Updates a listening history DataFrame with genre and track duration metadata
     from local metadata files and, if necessary, querying the Spotify Web API.
@@ -78,6 +78,8 @@ def update_meta_dataframe(dataframe, meta_dataframe):
     Full listening history DataFrame
     :param meta_dataframe: pd.DataFrame
     Previously existing metadata DataFrame that will be updated with new records.
+    :param from_start: str
+    A flag to allow updating the entire metadata DataFrame instead of just adding new records.
     :return: pd.DataFrame
     Updated metadata DataFrame with genre and duration fields populated (if available).
     """
@@ -105,6 +107,10 @@ def update_meta_dataframe(dataframe, meta_dataframe):
 
     last_index += 1
     new_rows_processed = 0
+
+    if from_start:
+        last_index = 0
+
     while last_index < len(dataframe):
         logging.debug(f'Before update:\n{dataframe.iloc[last_index]}')
 
@@ -180,7 +186,7 @@ if __name__ == '__main__':
 
     df_with_metadata = pd.read_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv')
 
-    updated_df = update_meta_dataframe(dataframe=df, meta_dataframe=df_with_metadata)
+    updated_df = update_meta_dataframe(dataframe=df, meta_dataframe=df_with_metadata, from_start=False)
     updated_df.to_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv', index=False)
 
     logger.info(f'Runtime: {time.time() - st}')

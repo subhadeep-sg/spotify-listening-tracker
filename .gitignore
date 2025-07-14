@@ -19,7 +19,8 @@ metadata/
 metadata_files/
 
 ## With regards to my task schedulers
-auto_extract_log.txt
+*.txt
+
 
 
 
