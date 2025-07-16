@@ -8,6 +8,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from dateutil import parser
 import logging
+from utils.discord_notifier import send_discord_alert
 
 load_dotenv()
 root_dir = os.getenv('project_root_dir')
@@ -20,19 +21,27 @@ current_year = datetime.now().year
 
 
 def read_recently_played():
-    logger.info('Generating spotipy.Spotify class object based on private user keys..')
-    scope = (
-        "user-read-recently-played "
-        # "user-top-read"
-    )
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-        client_id=os.getenv("SPOTIFY_CLIENT_ID"),
-        client_secret=os.getenv('SPOTIFY_CLIENT_SECRET'),
-        redirect_uri=os.getenv('redirect_uri'), #"http://127.0.0.1:5000",
-        scope=scope
-    ))
-    logger.info('Returning spotipy.Spotify class object...')
-    return sp
+    try:
+        logger.info('Generating spotipy.Spotify class object based on private user keys..')
+        scope = (
+            "user-read-recently-played "
+            # "user-top-read"
+        )
+
+        sp = spotipy.Spotify(
+            auth_manager=SpotifyOAuth(
+                client_id=os.getenv("SPOTIFY_CLIENT_ID"),
+                client_secret=os.getenv('SPOTIFY_CLIENT_SECRET'),
+                redirect_uri=os.getenv('redirect_uri'),  #"http://127.0.0.1:5000",
+                scope=scope
+            )
+        )
+        logger.info('Returning spotipy.Spotify class object...')
+        return sp
+    except Exception as e:
+        logger.error(f'Failure with authenticating credentials: {e}', exc_info=True)
+        send_discord_alert(f'Failure at read_recently_played(): {e}')
+        raise
 
 
 def extract_time_based_recent_played(spotipy_object, timeframe=1, time_type='day'):
@@ -41,13 +50,14 @@ def extract_time_based_recent_played(spotipy_object, timeframe=1, time_type='day
         one_day_ago = datetime.now() - timedelta(days=timeframe)
         timestamp = int(one_day_ago.timestamp() * 1000)
 
-        recent_tracks = spotipy_object.current_user_recently_played(limit=50, after=timestamp)
+        recent_played = spotipy_object.current_user_recently_played(limit=50, after=timestamp)
         logger.info(f"Receiving tracks after: {datetime.utcfromtimestamp(timestamp / 1000)} UTC")
-        logger.info(f"Number of tracks fetched: {len(recent_tracks['items'])}")
-        return recent_tracks
+        logger.info(f"Number of tracks fetched: {len(recent_played['items'])}")
+        return recent_played
 
     except Exception as e:
         logger.error(f'Failed to extract from Spotify Web API: {e}', exc_info=True)
+        send_discord_alert(f"Failure at extract_time_based_recent_played(): {e}")
 
 
 def storage_pipeline(tracks):
@@ -73,6 +83,9 @@ def storage_pipeline(tracks):
         column_list = ['track', 'artist', 'date', 'est_time', 'ist_time', 'iso_time']
 
         if list(dataframe.columns) != column_list:
+            send_discord_alert(
+                f'🚨 storage_pipeline(): Existing dataframe columns do not match expected columns.\nExpected: {column_list}\nFound: {list(dataframe.columns)}'
+            )
             raise ValueError(f"Existing dataframe doesn't match expected: {column_list}")
     else:
         dataframe = pd.DataFrame(columns=['track', 'artist', 'date', 'est_time', 'ist_time', 'iso_time'])
@@ -114,16 +127,25 @@ def storage_pipeline(tracks):
     return dataframe
 
 
+def main():
+    try:
+        start = time.time()
+        logger.info(f"Script run at: {datetime.now()}")
+
+        sp = read_recently_played()
+        recent_tracks = extract_time_based_recent_played(sp, timeframe=1, time_type='day')
+
+        if recent_tracks:
+            df = storage_pipeline(tracks=recent_tracks)
+            os.makedirs(f'{root_dir}/data', exist_ok=True)
+            df.to_csv(f'{root_dir}/data/spotify_data_{current_year}.csv', index=False)
+
+        logger.info(f'Writing into ./data/spotify_data_{current_year}.csv')
+        logger.info(f'Runtime: {time.time() - start}')
+    except Exception as e:
+        logger.error(f'Unexplained error: {e}', exc_info=True)
+        send_discord_alert(f'Unexplained error at main(): {e}')
+
+
 if __name__ == '__main__':
-    start = time.time()
-    logger.info(f"Script run at: {datetime.now()}")
-
-    sp = read_recently_played()
-    recent_tracks = extract_time_based_recent_played(sp, timeframe=1, time_type='day')
-    df = storage_pipeline(tracks=recent_tracks)
-
-    os.makedirs(f'{root_dir}/data', exist_ok=True)
-    df.to_csv(f'{root_dir}/data/spotify_data_{current_year}.csv', index=False)
-
-    logger.info(f'Writing into ./data/spotify_data_{current_year}.csv')
-    logger.info(f'Runtime: {time.time()-start}')
+    main()
