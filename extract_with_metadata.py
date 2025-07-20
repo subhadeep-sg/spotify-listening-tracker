@@ -5,11 +5,14 @@ import time
 import json
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 import logging
 from utils.discord_notifier import send_discord_alert
 
 load_dotenv()
 logging.basicConfig(
+    filename='metadata_enrich_log.txt',
+    filemode='a',
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
@@ -90,6 +93,9 @@ def update_meta_dataframe(sp, dataframe, meta_dataframe, from_start=False):
     :return: pd.DataFrame
     Updated metadata DataFrame with genre and duration fields populated (if available).
     """
+    logger.info(f'Beginning metadata extraction: {datetime.now().strftime("%H:%M:%S")}')
+
+    prev_length = len(meta_dataframe)
     os.makedirs(f'{root_dir}/metadata', exist_ok=True)
 
     missing_query_path = f'{root_dir}/metadata/missing_queries.json'
@@ -153,6 +159,13 @@ def update_meta_dataframe(sp, dataframe, meta_dataframe, from_start=False):
             song_metadata[track_name] = track_length
             artist_metadata[artist_name] = artist_genre
         logging.debug(f'Updated row:\n{dataframe.iloc[last_index]}')
+
+        # Updating latest row
+        if last_index < len(meta_dataframe):
+            meta_dataframe.loc[last_index] = dataframe.iloc[last_index]
+        else:
+            meta_dataframe.loc[meta_dataframe.shape[0]] = dataframe.iloc[last_index]
+
         if not dataframe.at[last_index, 'length_ms'] or not dataframe.at[last_index, 'genre']:
             if query not in missing_queries:
                 logger.debug(f'{query} has data missing and has not been added to missing queries')
@@ -179,8 +192,8 @@ def update_meta_dataframe(sp, dataframe, meta_dataframe, from_start=False):
 
     logger.info(f'New rows processed: {new_rows_processed}')
     logger.info(f'Returning dataframe with genre and length_ms updated')
-    logger.info(f'Previous meta dataframe: {len(meta_dataframe)} rows, New meta dataframe: {len(dataframe)} rows')
-    return dataframe
+    logger.info(f'Previous meta dataframe: {prev_length} rows, New meta dataframe: {len(meta_dataframe)} rows')
+    return meta_dataframe
 
 
 def main():
@@ -195,8 +208,7 @@ def main():
         df_with_metadata = pd.read_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv')
         updated_df = update_meta_dataframe(sp=sp, dataframe=df, meta_dataframe=df_with_metadata, from_start=False)
 
-        if updated_df:
-            updated_df.to_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv', index=False)
+        updated_df.to_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv', index=False)
 
         logger.info(f'Runtime: {time.time() - st}')
     except Exception as e:

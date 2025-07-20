@@ -1,27 +1,32 @@
-## Environment and IDE related folders
-.env
-.cache
-venv/
+# Python environment
 .venv/
+venv/
+
+# IDE / Editor configs
 .idea/
 .vscode/
 
-## Private notes
+# Python cache / bytecode
+__pycache__/
+*.pyc
+
+# Environment and cache
+.env
+.cache/
+.cache
+
+# Logs and scheduler outputs
+*.txt
+*.log
+
 PROGRESS.md
 
-## My private scripts and previous versions of code
-scripts/
-
-## My listening data
 data/
 storageListening/
 metadata/
 metadata_files/
+scripts/
 
-## With regards to my task schedulers
-*.txt
-
-
-
-
-
+# OS files
+.DS_Store
+Thumbs.db
