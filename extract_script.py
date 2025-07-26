@@ -14,7 +14,10 @@ load_dotenv()
 root_dir = os.getenv('project_root_dir')
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('auto_extract_log.txt', mode='a', encoding='utf-8'),
+    ]
 )
 logger = logging.getLogger(__name__)
 current_year = datetime.now().year
@@ -28,14 +31,22 @@ def read_recently_played():
             # "user-top-read"
         )
 
-        sp = spotipy.Spotify(
-            auth_manager=SpotifyOAuth(
-                client_id=os.getenv("SPOTIFY_CLIENT_ID"),
-                client_secret=os.getenv('SPOTIFY_CLIENT_SECRET'),
-                redirect_uri=os.getenv('redirect_uri'),  #"http://127.0.0.1:5000",
-                scope=scope
-            )
+        auth_manager = SpotifyOAuth(
+            client_id=os.getenv('SPOTIFY_CLIENT_ID'),
+            client_secret=os.getenv('SPOTIFY_CLIENT_SECRET'),
+            redirect_uri=os.getenv('redirect_uri'),
+            scope=scope
         )
+
+        token_info = auth_manager.get_cached_token()
+        if not token_info:
+            msg = f'Spotify requires manual re-authentication! Script paused..'
+            logger.error(msg)
+            send_discord_alert(msg)
+            raise RuntimeError(msg)
+
+        sp = spotipy.Spotify(auth_manager=auth_manager)
+
         logger.info('Returning spotipy.Spotify class object...')
         return sp
     except Exception as e:
@@ -122,9 +133,20 @@ def storage_pipeline(tracks):
 
     dataframe = pd.concat([dataframe, pd.DataFrame(new_rows)], ignore_index=True)
     dataframe = dataframe.sort_values(by=['iso_time'], ascending=True)
+
     logger.info(f'Added {new_track_count} new tracks.')
     logger.info(f'Returning dataframe with total {len(dataframe)} tracks..')
     return dataframe
+
+
+def check_daily_data_freshness(dataframe):
+    yesterday = (datetime.utcnow() - timedelta(days=1)).date()
+    dates_present = dataframe['iso_time'].astype(str).unique()
+
+    if str(yesterday) not in dates_present:
+        msg = f'No listening day for {yesterday}. Check auth or API calls'
+        logger.warning(msg)
+        send_discord_alert(msg)
 
 
 def main():
@@ -133,12 +155,14 @@ def main():
         logger.info(f"Script run at: {datetime.now()}")
 
         sp = read_recently_played()
-        recent_tracks = extract_time_based_recent_played(sp, timeframe=1, time_type='day')
+        recent_tracks = extract_time_based_recent_played(sp, timeframe=4, time_type='day')
 
         if recent_tracks:
             df = storage_pipeline(tracks=recent_tracks)
             os.makedirs(f'{root_dir}/data', exist_ok=True)
-            df.to_csv(f'{root_dir}/data/spotify_data_{current_year}.csv', index=False)
+            df.to_csv(f'{root_dir}/data/spotify_data_{current_year}.csv', encoding='utf-8-sig', index=False)
+
+            check_daily_data_freshness(df)
 
         logger.info(f'Writing into ./data/spotify_data_{current_year}.csv')
         logger.info(f'Runtime: {time.time() - start}')

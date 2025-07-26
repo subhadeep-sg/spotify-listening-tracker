@@ -66,6 +66,10 @@ def query_search_spotipy(sp, query, artist):
     else:
         logger.warning(f'No artist found for query: {artist}')
 
+    if len(query) >= 250:
+        logger.warning(f'Query larger than 250 char: {query}')
+        query = query[:250]
+
     results = sp.search(q=query, type='track', limit=1)
 
     if results['tracks']['items']:
@@ -101,16 +105,16 @@ def update_meta_dataframe(sp, dataframe, meta_dataframe, from_start=False):
     missing_query_path = f'{root_dir}/metadata/missing_queries.json'
 
     if os.path.exists(missing_query_path):
-        with open(missing_query_path, 'r') as f:
+        with open(missing_query_path, 'r', encoding='utf-8') as f:
             missing_queries = json.load(f)
     else:
         missing_queries = {}
 
-    with open(f"{root_dir}/metadata/artist_metadata.json", 'r') as f:
+    with open(f"{root_dir}/metadata/artist_metadata.json", 'r', encoding='utf-8') as f:
         artist_metadata = json.load(f)
 
     # song_metadata = {}
-    with open(f"{root_dir}/metadata/song_metadata.json", 'r') as f:
+    with open(f"{root_dir}/metadata/song_metadata.json", 'r', encoding='utf-8') as f:
         song_metadata = json.load(f)
 
     last_row_meta_df = meta_dataframe.tail(1)
@@ -133,7 +137,7 @@ def update_meta_dataframe(sp, dataframe, meta_dataframe, from_start=False):
 
         if track_name in song_metadata:
             logger.debug(f'{track_name} already in song metadata')
-            dataframe.at[last_index, 'length_ms'] = song_metadata[track_name]
+            dataframe.at[last_index, 'length_s'] = song_metadata[track_name]
             if artist_name not in artist_metadata:
                 track_length, genre_data = query_search_spotipy(sp=sp, query=query, artist=artist_name)
                 artist_metadata[artist_name] = genre_data
@@ -148,13 +152,13 @@ def update_meta_dataframe(sp, dataframe, meta_dataframe, from_start=False):
             dataframe.at[last_index, 'genre'] = artist_metadata[artist_name]
             query = f"{dataframe.at[last_index, 'track']} {dataframe.at[last_index, 'artist']}"
             track_length, artist_genre = query_search_spotipy(sp=sp, query=query, artist=artist_name)
-            dataframe.at[last_index, 'length_ms'] = track_length
+            dataframe.at[last_index, 'length_s'] = track_length
         else:
             logger.debug('Track and artist not in metadata, new entry..')
             query = f"{dataframe.at[last_index, 'track']} {dataframe.at[last_index, 'artist']}"
             track_length, artist_genre = query_search_spotipy(sp=sp, query=query, artist=artist_name)
             dataframe.at[last_index, 'genre'] = artist_genre
-            dataframe.at[last_index, 'length_ms'] = track_length
+            dataframe.at[last_index, 'length_s'] = track_length
 
             song_metadata[track_name] = track_length
             artist_metadata[artist_name] = artist_genre
@@ -166,7 +170,7 @@ def update_meta_dataframe(sp, dataframe, meta_dataframe, from_start=False):
         else:
             meta_dataframe.loc[meta_dataframe.shape[0]] = dataframe.iloc[last_index]
 
-        if not dataframe.at[last_index, 'length_ms'] or not dataframe.at[last_index, 'genre']:
+        if not dataframe.at[last_index, 'length_s'] or not dataframe.at[last_index, 'genre']:
             if query not in missing_queries:
                 logger.debug(f'{query} has data missing and has not been added to missing queries')
                 missing_queries[query] = {
@@ -181,17 +185,17 @@ def update_meta_dataframe(sp, dataframe, meta_dataframe, from_start=False):
         new_rows_processed += 1
         last_index += 1
 
-    with open(missing_query_path, 'w') as f:
-        json.dump(missing_queries, f, indent=2)
+    with open(missing_query_path, encoding='utf-8', mode='w') as f:
+        json.dump(missing_queries, f, ensure_ascii=False, indent=2)
 
-    with open(f"{root_dir}/metadata/artist_metadata.json", "w") as f:
-        json.dump(artist_metadata, f, indent=2)
+    with open(f"{root_dir}/metadata/artist_metadata.json", encoding='utf-8', mode="w") as f:
+        json.dump(artist_metadata, f, ensure_ascii=False, indent=2)
 
-    with open(f"{root_dir}/metadata/song_metadata.json", "w") as f:
-        json.dump(song_metadata, f, indent=2)
+    with open(f"{root_dir}/metadata/song_metadata.json", encoding='utf-8', mode="w") as f:
+        json.dump(song_metadata, f, ensure_ascii=False, indent=2)
 
     logger.info(f'New rows processed: {new_rows_processed}')
-    logger.info(f'Returning dataframe with genre and length_ms updated')
+    logger.info(f'Returning dataframe with genre and length_s updated')
     logger.info(f'Previous meta dataframe: {prev_length} rows, New meta dataframe: {len(meta_dataframe)} rows')
     return meta_dataframe
 
@@ -203,12 +207,12 @@ def main():
 
         df = pd.read_csv(f'{root_dir}/data/spotify_data_2025.csv')
         df['genre'] = None
-        df['length_ms'] = None
+        df['length_s'] = None
 
         df_with_metadata = pd.read_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv')
         updated_df = update_meta_dataframe(sp=sp, dataframe=df, meta_dataframe=df_with_metadata, from_start=False)
 
-        updated_df.to_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv', index=False)
+        updated_df.to_csv(f'{root_dir}/data/spotify_data_with_metadata_2025.csv', encoding='utf-8-sig', index=False)
 
         logger.info(f'Runtime: {time.time() - st}')
     except Exception as e:
